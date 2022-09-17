@@ -27,10 +27,9 @@ def main():
     print(f'[LISTENING] Server is listening on {IP}:{PORT}')
     current_clients = list()
     client_id = 1
-    condition = threading.Condition()
     while True:
         conn, addr = server.accept()
-        client = Client(client_id, condition)
+        client = Client(client_id)
         threaded_client = threading.Thread(target=client.handle_client, args=(conn, addr))
         threaded_client.start()
         current_clients.append(client)

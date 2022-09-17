@@ -25,15 +25,12 @@ class Client:
         while self.connected:
             if self.conn_type == "main":
                 msg = conn.recv(1024).decode(FORMAT)
+                files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
                 if msg == "!DISCONNECT":
                     self.connected = False
                     conn.send("Disconnected from server".encode(FORMAT))
                     print(f"[DISCONNECTED] {addr} disconnected.")
                     self.disconnectClientFromList()
-                elif msg == "!LIST":
-                    files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
-                    message = "Available files: " + ", ".join(files)
-                    conn.send(message.encode(FORMAT))
                 elif msg == "!SEND_FILE":
                     commands = msg.split()
                     if len(commands) != 2:
