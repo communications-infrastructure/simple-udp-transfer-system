@@ -44,6 +44,7 @@ class Client:
                         self.num_clients = int(commands[2])
                         selected_file = commands[1]
                         
+                        
                     except ValueError:
                         conn.send(f"Invalid number of clients: {commands[2]}".encode(FORMAT))
                 elif msg == "!GET_CLIENTS":
@@ -55,6 +56,8 @@ class Client:
                     self.connected = False
                     conn.send("Disconnected from server".encode(FORMAT))
                     print(f"[DISCONNECTED] {addr} disconnected.")
+                elif msg == "OK":
+                    pass
         conn.close()
 
     def setClientList(self, list):
