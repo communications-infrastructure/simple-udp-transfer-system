@@ -7,6 +7,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Update Ubuntu Software repository
 RUN apt update && apt dist-upgrade -y && apt install -y python3 python3-pip git
 
-COPY server .
+RUN mkdir /home/server
 
-ENTRYPOINT python3.10 server.py
+COPY server /home/server
+
+ENTRYPOINT python3.10 /home/server.py
