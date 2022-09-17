@@ -11,4 +11,4 @@ RUN mkdir /home/server
 
 COPY server /home/server
 
-ENTRYPOINT python3.10 /home/server.py
+ENTRYPOINT python3.10 /home/server/server.py
