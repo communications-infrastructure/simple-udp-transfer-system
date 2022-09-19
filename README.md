@@ -10,7 +10,7 @@ For executing the server in your system, use the following commands:
 docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system:main
 
 # Start container with server
-docker run --platform linux/amd64 -e PYTHONUNBUFFERED=1 ghcr.io/communications-infrastructure/simple-file-transfer-system:main
+docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system:main
 ```
 
 ## License
