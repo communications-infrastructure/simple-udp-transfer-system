@@ -7,10 +7,19 @@ Simple file transfer system using TCP protocol between client and server.
 For executing the server in your system, use the following commands:
 ```sh
 # Download Docker image
-docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system:main
+docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-server:main
 
 # Start container with server
-docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system:main
+docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-server:main
+```
+
+For executing the client in your system, use the following commands:
+```sh
+# Download Docker image
+docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-client:main
+
+# Start container with client
+docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-client:main
 ```
 
 ## License
@@ -19,4 +28,3 @@ docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simpl
 
 - **[MIT license](LICENSE)**
 - Copyright 2022 © Juan Romero & Juan Alegría
-
