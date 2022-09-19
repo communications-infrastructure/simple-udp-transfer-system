@@ -30,25 +30,35 @@ def setup_log():
     log.setLevel(logging.DEBUG)
 
 
+class SocketListener(threading.Thread):
+    def run(self):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(ADDR)
+        server.listen()
+        log.info(f"[PROCESS] Server process ID: {os.getpid()}")
+        log.info(f'[LISTENING] Server is listening on {IP}:{PORT}')
+        current_clients = list()
+        client_id = 1
+        threading_condition = threading.Condition()
+        while True:
+            conn, addr = server.accept()
+            client = Client(client_id, threading_condition)
+            threaded_client = threading.Thread(target=client.handle_client, args=(conn, addr))
+            threaded_client.start()
+            current_clients.append(client)
+            client.setClientList(current_clients)
+            log.info(f"[ACTIVE CONNECTIONS] {threading.active_count() - 2}")
+            client_id += 1
+
+
 def main():
     log.info("[STARTING] server is starting...")
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(ADDR)
-    server.listen()
-    log.info(f"[PROCESS] Server process ID: {os.getpid()}")
-    log.info(f'[LISTENING] Server is listening on {IP}:{PORT}')
-    current_clients = list()
-    client_id = 1
-    threading_condition = threading.Condition()
-    while True:
-        conn, addr = server.accept()
-        client = Client(client_id, threading_condition)
-        threaded_client = threading.Thread(target=client.handle_client, args=(conn, addr))
-        threaded_client.start()
-        current_clients.append(client)
-        client.setClientList(current_clients)
-        log.info(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
-        client_id += 1
+    pid = os.getpid()
+    server_listener = SocketListener()
+    server_listener.start()
+    input("[MAIN THREAD] Press Enter to exit...")
+    log.info(f"[STOPPING] server is stopping...")
+    os.kill(pid, 9)
 
 if  __name__ == "__main__":
     setup_log()
