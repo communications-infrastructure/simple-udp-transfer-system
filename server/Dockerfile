@@ -1,5 +1,5 @@
 FROM python:3
 
-COPY . /home/server
+COPY server /home/server
 
 ENTRYPOINT python3.10 /home/server/server.py

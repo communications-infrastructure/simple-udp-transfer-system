@@ -1,5 +1,5 @@
 FROM python:3
 
-COPY . /home/client
+COPY client /home/client
 
 ENTRYPOINT python3.10 /home/client/client.py
