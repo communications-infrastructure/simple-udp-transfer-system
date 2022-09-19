@@ -29,7 +29,7 @@ def main():
     print(f"[SERVER] {msg}")
 
     while connected:
-        msg = input("Enter a message: ")
+        msg = input("Enter a command: ")
         client.send(msg.encode(FORMAT))
         if msg == "!DISCONNECT":
             connected = False

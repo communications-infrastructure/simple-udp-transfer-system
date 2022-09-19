@@ -2,14 +2,16 @@ import socket
 import threading
 import os
 import sys
-import asyncio
+import logging
+
+log = logging.getLogger('TCPServer')
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
 from classes.client_handling import Client
-
+from logger.logger import define_log, StreamToLogger
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 6969
 ADDR = (IP, PORT)
@@ -18,24 +20,36 @@ CONNECTION_DICT = {}
 
 lock = threading.RLock()
 
+def setup_log():
+    console_handler, file_handler = define_log()
+    # Redirect stdout and stderr to log:
+    sys.stdout = StreamToLogger(log, logging.INFO)
+    sys.stderr = StreamToLogger(log, logging.ERROR)
+    log.addHandler(file_handler)
+    log.addHandler(console_handler)
+    log.setLevel(logging.DEBUG)
+
+
 def main():
-    print("[STARTING] server is starting...")
+    log.info("[STARTING] server is starting...")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)
     server.listen()
-    print(f"[PROCESS] Current process ID: {os.getpid()}")
-    print(f'[LISTENING] Server is listening on {IP}:{PORT}')
+    log.info(f"[PROCESS] Server process ID: {os.getpid()}")
+    log.info(f'[LISTENING] Server is listening on {IP}:{PORT}')
     current_clients = list()
     client_id = 1
+    threading_condition = threading.Condition()
     while True:
         conn, addr = server.accept()
-        client = Client(client_id)
+        client = Client(client_id, threading_condition)
         threaded_client = threading.Thread(target=client.handle_client, args=(conn, addr))
         threaded_client.start()
         current_clients.append(client)
         client.setClientList(current_clients)
-        print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
+        log.info(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
         client_id += 1
 
 if  __name__ == "__main__":
+    setup_log()
     main()
