@@ -49,12 +49,10 @@ class SocketListener(threading.Thread):
             log.info(f"[ACTIVE CONNECTIONS] {threading.active_count() - 2}")
             client_id += 1
 
-
 def main():
     log.info("[STARTING] server is starting...")
     pid = os.getpid()
     server_listener = SocketListener()
-    server_listener.daemon = True
     server_listener.start()
     try:
         input("[MAIN THREAD] Press Enter to exit...")
@@ -62,6 +60,9 @@ def main():
         os.kill(pid, 9)
     except EOFError:
         pass
+    except KeyboardInterrupt:
+        log.info(f"[MAIN THREAD] Server is stopping...")
+        os.kill(pid, 9)
 
 if  __name__ == "__main__":
     setup_log()
