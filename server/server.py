@@ -56,9 +56,12 @@ def main():
     pid = os.getpid()
     server_listener = SocketListener()
     server_listener.start()
-    input("[MAIN THREAD] Press Enter to exit...")
-    log.info(f"[STOPPING] server is stopping...")
-    os.kill(pid, 9)
+    try:
+        input("[MAIN THREAD] Press Enter to exit...")
+        log.info(f"[MAIN THREAD] Server is stopping...")
+        os.kill(pid, 9)
+    except EOFError:
+        pass
 
 if  __name__ == "__main__":
     setup_log()
