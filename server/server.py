@@ -18,8 +18,6 @@ ADDR = (IP, PORT)
 FORMAT = 'utf-8'
 CONNECTION_DICT = {}
 
-lock = threading.RLock()
-
 def setup_log():
     console_handler, file_handler = define_log()
     # Redirect stdout and stderr to log:
@@ -44,6 +42,7 @@ class SocketListener(threading.Thread):
             conn, addr = server.accept()
             client = Client(client_id, threading_condition)
             threaded_client = threading.Thread(target=client.handle_client, args=(conn, addr))
+            threaded_client.daemon = True
             threaded_client.start()
             current_clients.append(client)
             client.setClientList(current_clients)
@@ -55,6 +54,7 @@ def main():
     log.info("[STARTING] server is starting...")
     pid = os.getpid()
     server_listener = SocketListener()
+    server_listener.daemon = True
     server_listener.start()
     try:
         input("[MAIN THREAD] Press Enter to exit...")
