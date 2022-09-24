@@ -2,27 +2,43 @@ import socket
 import threading
 from tqdm import tqdm
 import os
+import sys
+import logging
+import time
 from hashfinder.get_hash import hash_file
+from logger.logger import define_log, StreamToLogger
 
+log = logging.getLogger("client")
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 6969
 ADDR = (IP, PORT)
 FORMAT = 'utf-8'
+COMMANDS = ["!DISCONNECT", "!CONFIG", "!START", "!LIST"]
+num_clients = None
+
+def setup_log():
+    console_handler, file_handler = define_log()
+    # Redirect stdout and stderr to log:
+    sys.stdout = StreamToLogger(log, logging.INFO)
+    log.addHandler(file_handler)
+    log.addHandler(console_handler)
+    log.setLevel(logging.DEBUG)
+
 
 def connect_client(client_num):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(ADDR)
     connected = True
-    print(f"[CONNECTED] Client #{client_num} - Connected to {IP}:{PORT}")
+    log.info(f"[CONNECTED] Client #{client_num} - Connected to {IP}:{PORT}")
 
     while connected:
         client.send(f"!CONNECTION {client_num}".encode(FORMAT))
         msg = client.recv(1024).decode(FORMAT)
-        print(f"[SERVER] {msg}")
+        log.info(f"[SERVER] {msg}")
         if msg == "!DISCONNECT":
             connected = False
         elif msg == "OK":
-            print(f"[CLIENT #{client_num}] Connection established waiting for file transfer")
+            log.info(f"[CLIENT #{client_num}] Connection established waiting for file transfer")
             client.send("OK".encode(FORMAT))
             msg = client.recv(1024).decode(FORMAT)
             if "TRANSFER" in msg:
@@ -30,37 +46,48 @@ def connect_client(client_num):
                 file_data = msg.split(":")
                 filename = f"File {client_num} " + file_data[1].rstrip()
                 filesize = int(file_data[2])
+                log.info(f"[CLIENT #{client_num}] Receiving file {filename} with size {filesize}")
                 bar = tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
                 try:
-                    os.makedirs('./client/files')
+                    os.makedirs('./client/ArchivosRecibidos')
                 except FileExistsError:
                     pass
-                with open(f"./client/files/{filename}", "wb") as f:
-                    while True:
-                        data = client.recv(1024)
-                        if len(data) <= 0:
-                            bar.close()
-                            break
-                        bar.update(len(data))
-                        f.write(data)
+                global num_clients
                 
-                print(f"[CLIENT #{client_num}] File transfer complete")
-                clientHash = hash_file(f"./client/files/{filename}")
+                with open(f"./client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "wb") as f:
+                    try:
+                        t1 = time.time()
+                        while True:
+                            data = client.recv(1024)
+                            if len(data) <= 0:
+                                bar.close()
+                                t2 = time.time()
+                                log.info(f"[CLIENT #{client_num}] File transfer time: {t2-t1} seconds")
+                                break
+                            bar.update(len(data))
+                            f.write(data)
+                    except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError):
+                        log.error("ERROR: Connection lost")
+                        connected = False
+                log.info(f"[CLIENT #{client_num}] File transfer complete")
+                clientHash = hash_file(f"./client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4")
                 if hash == clientHash:
-                    print(f"[CLIENT #{client_num}] File transfer successful, integrity check passed - Hashes are equal.")
-                    print(f"Server Hash: {hash}")
-                    print(f"Client Hash: {clientHash}")
+                    log.info(f"[CLIENT #{client_num}] File transfer successful, integrity check passed - Hashes are equal.")
+                    log.info(f"File Size: {filesize} bytes")
+                    log.info(f"Server Hash: {hash}")
+                    log.info(f"Client Hash: {clientHash}")
                 else:
-                    print(f"[CLIENT #{client_num}] File transfer successful, integrity check failed - Hashes are not equal.")
-                    print(f"Server Hash: {hash}")
-                    print(f"Client Hash: {clientHash}")
+                    log.info(f"[CLIENT #{client_num}] File transfer successful, integrity check failed - Hashes are not equal.")
+                    log.info(f"File Size: {filesize} bytes")
+                    log.info(f"Server Hash: {hash}")
+                    log.info(f"Client Hash: {clientHash}")
                 
                 connected = False
     client.close()
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print(f"[STARTING] Client is starting...")
+    log.info(f"[STARTING] Client is starting...")
     try:
         global ADDR
         global IP
@@ -72,19 +99,24 @@ def main():
         client.connect(ADDR)
         
     connected = True
-    print(f"[CONNECTED] Main Client - Connected to {IP}:{PORT}")
+    log.info(f"[CONNECTED] Main Client - Connected to {IP}:{PORT}")
     client.send("!MAIN_CONN".encode(FORMAT))
     msg = client.recv(1024).decode(FORMAT)
-    print(f"[SERVER] {msg}")
+    msg = msg.split("\n")
+    for i in msg:
+        log.info(f"[MENU] {i}")
 
     threads = list()
 
-    num_clients = None
+    global num_clients
     while connected:
-        msg = input("Enter a command: ")
+        msg = input("[MENU] Enter a command: ")
+        if not msg in COMMANDS and not "!CONFIG" in msg:
+            log.info(f"[MENU] Invalid command {msg}")
+            continue
         client.send(msg.encode(FORMAT))
         msg_rcv = client.recv(1024).decode(FORMAT)
-        print(f"[SERVER] {msg_rcv}")
+        log.info(f"[SERVER] {msg_rcv}")
         if msg == "!DISCONNECT":
             connected = False
         elif "!CONFIG" in msg and "Config set" in msg_rcv:
@@ -99,4 +131,5 @@ def main():
         
 
 if __name__ == "__main__":
+    setup_log()
     main()

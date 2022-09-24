@@ -3,6 +3,8 @@ import logging
 from logger.logger import exception_to_log
 import asyncio
 from hashfinder.get_hash import hash_file
+import logging
+import time
 
 FORMAT = 'utf-8'
 MENU = "Server Commands:\n!LIST - List all the available files\n!CONFIG - Set up the server file transfer configuration\n!START - Start the file transfer to all clients\n!DISCONNECT - Disconnect from the server\n"
@@ -28,6 +30,7 @@ class Client:
         config_msg = conn.recv(1024).decode(FORMAT)
         if config_msg == "!MAIN_CONN":
             self.send(("Main connection received\n"+MENU))
+            log.info(f"[MAIN CONNECTION] {addr} connected.")
             self.conn_type = "main"
         elif "!CONNECTION" in config_msg:
             self.conn_type = "client"
@@ -78,6 +81,9 @@ class Client:
                 self.num_clients = int(commands[2])
                 self.selected_file = commands[1]
                 self.send(f"Config set to {commands[1]} and {commands[2]} clients")
+                log.info(f"[FILE CONFIG] File to be sent: {commands[1]}")
+                filesize = os.path.getsize(f'./server/files/{self.selected_file}')
+                log.info(f"[FILE CONFIG] File size: {filesize} bytes")
             except ValueError:
                 self.send(f"Invalid number of clients: {commands[2]}")
         elif msg == "!CONFIG":
@@ -117,11 +123,15 @@ class Client:
             with open(f"./server/files/{self.selected_file}", "rb") as f:
                 data = f.read()
             self.send(f"{file_hash}")
-            self._connection.sendall(data)
-            self.connected = False
-            log.info("File sent to Client " + self.connection_id)
-
-            
+            try:
+                t1 = time.time()
+                self._connection.sendall(data)
+                t2 = time.time()
+                log.info(f"[FILE TRANSFER] - File {self.selected_file} sent to {self.address} [CLIENT {self.connection_id}] in {t2-t1} seconds")
+                self.connected = False
+                log.info("File succesfully sent to Client " + str(self.connection_id))
+            except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError):
+                log.error("Error sending file to Client " + str(self.connection_id))
 
 
     def setClientList(self, list):

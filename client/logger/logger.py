@@ -55,15 +55,15 @@ def define_log():
     # Logging config, logging outside the github repo
     try:
         if os.name != 'nt':
-            os.makedirs('/home/server/logs')
+            os.makedirs('/home/client/logs')
         else:
-            os.makedirs('./logs')
+            os.makedirs('./client/logs')
     except FileExistsError:
         pass
     if os.name != 'nt':
-        log_filename = '/home/server/logs/' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
+        log_filename = '/home/client/logs/' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
     else:
-        log_filename = "./server/logs/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
+        log_filename = "./client/logs/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
     
     console_handler = logging.StreamHandler(sys.stdout)
     console_formatter = ColorFormatter()
@@ -99,7 +99,7 @@ class StreamToLogger(object):
         pass
 
 def exception_to_log(log, traceback_message):
-    log.error("An exception has ocurred while running the server:")
+    log.error("An exception has ocurred while running the client:")
     exc = traceback.format_exception(traceback_message)
     for line in exc:
         line = line.rstrip().splitlines()
