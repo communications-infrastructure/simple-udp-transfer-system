@@ -21,6 +21,11 @@ docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-cl
 # Start container with client
 docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-client:main
 ```
+For verifying Docker image contents, export container filesystem with:
+
+```sh
+docker export $(docker ps -lq) -o out.tar
+```
 
 ## License
 
