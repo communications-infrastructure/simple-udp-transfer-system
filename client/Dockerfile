@@ -2,6 +2,6 @@ FROM python:3
 
 COPY client /home/client
 
-RUN pip3 install -r /home/client/requirements.txt
+RUN pip install -r /home/client/requirements.txt
 
 ENTRYPOINT python3.10 /home/client/client.py
