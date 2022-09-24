@@ -1,8 +1,8 @@
 import socket
 import threading
-from tkinter.tix import FileEntry
 from tqdm import tqdm
 import os
+from hashfinder.get_hash import hash_file
 
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 6969
@@ -26,32 +26,51 @@ def connect_client(client_num):
             client.send("OK".encode(FORMAT))
             msg = client.recv(1024).decode(FORMAT)
             if "TRANSFER" in msg:
+                hash = client.recv(1024).decode(FORMAT)
                 file_data = msg.split(":")
-                filename = file_data[1].rstrip()
+                filename = f"File {client_num} " + file_data[1].rstrip()
                 filesize = int(file_data[2])
                 bar = tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
                 try:
                     os.makedirs('./client/files')
                 except FileExistsError:
                     pass
-                client.settimeout(5)
-                try:
-                    with open(f"./client/files/{filename}", "wb") as f:
-                        while True:
-                            data = client.recv(1024)
-                            bar.update(len(data))
-                            if not data:
-                                break
-                            f.write(data)
-                except TimeoutError:
-                    if os.path.getsize(f"./client/files/{filename}") == filesize:
-                        print(f"[CLIENT #{client_num}] File transfer complete")
+                with open(f"./client/files/{filename}", "wb") as f:
+                    while True:
+                        data = client.recv(1024)
+                        if len(data) <= 0:
+                            bar.close()
+                            break
+                        bar.update(len(data))
+                        f.write(data)
+                
+                print(f"[CLIENT #{client_num}] File transfer complete")
+                clientHash = hash_file(f"./client/files/{filename}")
+                if hash == clientHash:
+                    print(f"[CLIENT #{client_num}] File transfer successful, integrity check passed - Hashes are equal.")
+                    print(f"Server Hash: {hash}")
+                    print(f"Client Hash: {clientHash}")
+                else:
+                    print(f"[CLIENT #{client_num}] File transfer successful, integrity check failed - Hashes are not equal.")
+                    print(f"Server Hash: {hash}")
+                    print(f"Client Hash: {clientHash}")
+                
                 connected = False
     client.close()
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
+    print(f"[STARTING] Client is starting...")
+    try:
+        global ADDR
+        global IP
+        global PORT
+        client.connect(ADDR)
+    except ConnectionRefusedError:
+        IP = input("Local server is not running, please enter the new IP address of the server: ")
+        ADDR = (IP, PORT)
+        client.connect(ADDR)
+        
     connected = True
     print(f"[CONNECTED] Main Client - Connected to {IP}:{PORT}")
     client.send("!MAIN_CONN".encode(FORMAT))

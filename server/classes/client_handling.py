@@ -2,7 +2,7 @@ import os
 import logging
 from logger.logger import exception_to_log
 import asyncio
-from tqdm import tqdm
+from hashfinder.get_hash import hash_file
 
 FORMAT = 'utf-8'
 MENU = "Server Commands:\n!LIST - List all the available files\n!CONFIG - Set up the server file transfer configuration\n!START - Start the file transfer to all clients\n!DISCONNECT - Disconnect from the server\n"
@@ -113,10 +113,13 @@ class Client:
             self.condition.wait()
             self.condition.release()
             self.send(f"TRANSFER :{self.selected_file}:{os.path.getsize(f'./server/files/{self.selected_file}')}")
+            file_hash = hash_file(f'./server/files/{self.selected_file}')
             with open(f"./server/files/{self.selected_file}", "rb") as f:
                 data = f.read()
+            self.send(f"{file_hash}")
             self._connection.sendall(data)
-            log.info("File sent to client")
+            self.connected = False
+            log.info("File sent to Client " + self.connection_id)
 
             
 
