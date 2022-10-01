@@ -10,7 +10,7 @@ For executing the server in your system, use the following commands:
 docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-server:main
 
 # Start container with server
-docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-server:main
+docker run --platform linux/amd64 -p 6969:6969 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-server:main
 ```
 
 For executing the client in your system, use the following commands:
@@ -21,6 +21,8 @@ docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-cl
 # Start container with client
 docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-client:main
 ```
+> **_NOTE:_** If you have problems connecting the client with the server from Windows, try to clone this repository and run directly the `./client/client.py` file. This may be due to your virtualization settings. 
+
 For verifying Docker image contents, export container filesystem with:
 
 ```sh
