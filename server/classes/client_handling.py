@@ -59,9 +59,11 @@ class Client:
         msg = self._connection.recv(1024).decode(FORMAT)
         try:
             files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
+            self.server_path = "./server/files/"
         except FileNotFoundError:
             try:
                 files = [f for f in os.listdir("/home/server/files") if os.path.isfile(os.path.join("/home/server/files", f))]
+                self.server_path = "/home/server/files"
             except FileNotFoundError:
                 log.critical(f"No files found in server/files or files. Current path {pathlib.Path(__file__).resolve()}")
         if msg == "!DISCONNECT":
@@ -89,7 +91,7 @@ class Client:
                 self.selected_file = commands[1]
                 self.send(f"Config set to {commands[1]} and {commands[2]} clients")
                 log.info(f"[FILE CONFIG] File to be sent: {commands[1]}")
-                filesize = os.path.getsize(f'./server/files/{self.selected_file}')
+                filesize = os.path.getsize(self.server_path+self.selected_file)
                 log.info(f"[FILE CONFIG] File size: {filesize} bytes")
             except ValueError:
                 self.send(f"Invalid number of clients: {commands[2]}")
@@ -116,6 +118,11 @@ class Client:
 
     def normal_client(self):
         msg = self._connection.recv(1024).decode(FORMAT)
+        try:
+            self.server_path = "./server/files/"
+            [f for f in os.listdir(self.server_path) if os.path.isfile(os.path.join(self.server_path, f))]
+        except FileNotFoundError:
+            self.server_path = "/home/server/files"
         if msg == "!DISCONNECT":
             self.connected = False
             self.send("Disconnected from server")
@@ -125,9 +132,9 @@ class Client:
             self.condition.acquire()
             self.condition.wait()
             self.condition.release()
-            self.send(f"TRANSFER :{self.selected_file}:{os.path.getsize(f'./server/files/{self.selected_file}')}")
-            file_hash = hash_file(f'./server/files/{self.selected_file}')
-            with open(f"./server/files/{self.selected_file}", "rb") as f:
+            self.send(f"TRANSFER :{self.selected_file}:{os.path.getsize(self.server_path+self.selected_file)}")
+            file_hash = hash_file(self.server_path+self.selected_file)
+            with open(self.server_path+self.selected_file, "rb") as f:
                 data = f.read()
             self.send(f"{file_hash}")
             try:
