@@ -5,6 +5,7 @@ import asyncio
 from hashfinder.get_hash import hash_file
 import logging
 import time
+import pathlib
 
 FORMAT = 'utf-8'
 MENU = "Server Commands:\n!LIST - List all the available files\n!CONFIG - Set up the server file transfer configuration\n!START - Start the file transfer to all clients\n!DISCONNECT - Disconnect from the server\n"
@@ -59,7 +60,10 @@ class Client:
         try:
             files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
         except FileNotFoundError:
-            files = [f for f in os.listdir("./files") if os.path.isfile(os.path.join("./files", f))]
+            try:
+                files = [f for f in os.listdir("./files") if os.path.isfile(os.path.join("./files", f))]
+            except FileNotFoundError:
+                log.critical(f"No files found in server/files or files. Current path {pathlib.Path(__file__).resolve()}")
         if msg == "!DISCONNECT":
             self.connected = False
             self.send("Disconnected from server")
