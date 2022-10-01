@@ -61,7 +61,7 @@ class Client:
             files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
         except FileNotFoundError:
             try:
-                files = [f for f in os.listdir("./files") if os.path.isfile(os.path.join("./files", f))]
+                files = [f for f in os.listdir("/home/server/files") if os.path.isfile(os.path.join("/home/server/files", f))]
             except FileNotFoundError:
                 log.critical(f"No files found in server/files or files. Current path {pathlib.Path(__file__).resolve()}")
         if msg == "!DISCONNECT":
