@@ -84,13 +84,13 @@ class Client:
                 self.send(f"Invalid config format! {msg_str}. Please use the following format: !CONFIG :<file> :<num_clients>")
                 return
             elif commands[1].rstrip() not in files:
-                self.send(f"File {commands[1]} does not exist")
+                self.send(f"File {commands[1].rstrip()} does not exist")
                 return
             try:
                 self.num_clients = int(commands[2])
-                self.selected_file = commands[1]
-                self.send(f"Config set to {commands[1]} and {commands[2]} clients")
-                log.info(f"[FILE CONFIG] File to be sent: {commands[1]}")
+                self.selected_file = commands[1].rstrip()
+                self.send(f"Config set to {commands[1].rstrip()} and {commands[2]} clients")
+                log.info(f"[FILE CONFIG] File to be sent: {commands[1].rstrip()}")
                 filesize = os.path.getsize(self.server_path+self.selected_file)
                 log.info(f"[FILE CONFIG] File size: {filesize} bytes")
             except ValueError:
