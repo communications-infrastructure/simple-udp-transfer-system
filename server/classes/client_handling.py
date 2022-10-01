@@ -56,7 +56,10 @@ class Client:
 
     def main_client(self):
         msg = self._connection.recv(1024).decode(FORMAT)
-        files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
+        try:
+            files = [f for f in os.listdir("./server/files") if os.path.isfile(os.path.join("./server/files", f))]
+        except FileNotFoundError:
+            files = [f for f in os.listdir("./files") if os.path.isfile(os.path.join("./files", f))]
         if msg == "!DISCONNECT":
             self.connected = False
             self.send("Disconnected from server")
