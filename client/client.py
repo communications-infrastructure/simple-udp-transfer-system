@@ -16,6 +16,7 @@ FORMAT = 'utf-8'
 COMMANDS = ["!DISCONNECT", "!CONFIG", "!START", "!LIST"]
 num_clients = None
 
+
 def setup_log():
     console_handler, file_handler = define_log()
     # Redirect stdout and stderr to log:
@@ -38,7 +39,8 @@ def connect_client(client_num):
         if msg == "!DISCONNECT":
             connected = False
         elif msg == "OK":
-            log.info(f"[CLIENT #{client_num}] Connection established waiting for file transfer")
+            log.info(
+                f"[CLIENT #{client_num}] Connection established waiting for file transfer")
             client.send("OK".encode(FORMAT))
             msg = client.recv(1024).decode(FORMAT)
             if "TRANSFER" in msg:
@@ -46,14 +48,16 @@ def connect_client(client_num):
                 file_data = msg.split(":")
                 filename = f"File {client_num} " + file_data[1].rstrip()
                 filesize = int(file_data[2])
-                log.info(f"[CLIENT #{client_num}] Receiving file {filename} with size {filesize}")
-                bar = tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+                log.info(
+                    f"[CLIENT #{client_num}] Receiving file {filename} with size {filesize}")
+                bar = tqdm(range(
+                    filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
                 try:
                     os.makedirs('./client/ArchivosRecibidos')
                 except FileExistsError:
                     pass
                 global num_clients
-                
+
                 with open(f"./client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "wb") as f:
                     try:
                         t1 = time.time()
@@ -62,7 +66,8 @@ def connect_client(client_num):
                             if len(data) <= 0:
                                 bar.close()
                                 t2 = time.time()
-                                log.info(f"[CLIENT #{client_num}] File transfer time: {t2-t1} seconds")
+                                log.info(
+                                    f"[CLIENT #{client_num}] File transfer time: {t2-t1} seconds")
                                 break
                             bar.update(len(data))
                             f.write(data)
@@ -70,20 +75,24 @@ def connect_client(client_num):
                         log.error("ERROR: Connection lost")
                         connected = False
                 log.info(f"[CLIENT #{client_num}] File transfer complete")
-                clientHash = hash_file(f"./client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4")
+                clientHash = hash_file(
+                    f"./client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4")
                 if hash == clientHash:
-                    log.info(f"[CLIENT #{client_num}] File transfer successful, integrity check passed - Hashes are equal.")
+                    log.info(
+                        f"[CLIENT #{client_num}] File transfer successful, integrity check passed - Hashes are equal.")
                     log.info(f"File Size: {filesize} bytes")
                     log.info(f"Server Hash: {hash}")
                     log.info(f"Client Hash: {clientHash}")
                 else:
-                    log.info(f"[CLIENT #{client_num}] File transfer successful, integrity check failed - Hashes are not equal.")
+                    log.info(
+                        f"[CLIENT #{client_num}] File transfer successful, integrity check failed - Hashes are not equal.")
                     log.info(f"File Size: {filesize} bytes")
                     log.info(f"Server Hash: {hash}")
                     log.info(f"Client Hash: {clientHash}")
-                
+
                 connected = False
     client.close()
+
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -94,10 +103,11 @@ def main():
         global PORT
         client.connect(ADDR)
     except ConnectionRefusedError:
-        IP = input("Local server is not running, please enter the new IP address of the server: ")
+        IP = input(
+            "Local server is not running, please enter the new IP address of the server: ")
         ADDR = (IP, PORT)
         client.connect(ADDR)
-        
+
     connected = True
     log.info(f"[CONNECTED] Main Client - Connected to {IP}:{PORT}")
     client.send("!MAIN_CONN".encode(FORMAT))
@@ -128,7 +138,6 @@ def main():
                 client.start()
             connected = False
 
-        
 
 if __name__ == "__main__":
     setup_log()

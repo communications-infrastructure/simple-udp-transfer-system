@@ -6,6 +6,7 @@ import sys
 import os
 import traceback
 
+
 class ColorFormatter(logging.Formatter):
 
     # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
@@ -16,7 +17,6 @@ class ColorFormatter(logging.Formatter):
     # 90-97 are the same but "bright" foreground
     # 100-107 are the same as the bright ones but for the background.
     # 1 means bold, 2 means dim, 0 means reset, and 4 means underline.
-
 
     LEVEL_COLOURS = [
         (logging.DEBUG, '\x1b[40;1m'),
@@ -49,7 +49,7 @@ class ColorFormatter(logging.Formatter):
         # Remove the cache layer
         record.exc_text = None
         return output
-    
+
 
 def define_log():
     # Logging config, logging outside the github repo
@@ -61,19 +61,23 @@ def define_log():
     except FileExistsError:
         pass
     if os.name != 'nt':
-        log_filename = '/home/client/logs/' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
+        log_filename = '/home/client/logs/' + \
+            datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
     else:
-        log_filename = "./client/logs/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
-    
+        log_filename = "./client/logs/" + \
+            datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
+
     console_handler = logging.StreamHandler(sys.stdout)
     console_formatter = ColorFormatter()
-    file_formatter = logging.Formatter('%(asctime)s | %(levelname)s %(message)s', f"%Y-%m-%d %H:%M:%S")
+    file_formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)s %(message)s', f"%Y-%m-%d %H:%M:%S")
 
     # Print debug
     level = logging.DEBUG
     # Print to file, change file everyday at 12:00 Local
     date = datetime(2020, 1, 1, 12)
-    file_handler = hl.TimedRotatingFileHandler(log_filename, when='midnight', atTime=date)
+    file_handler = hl.TimedRotatingFileHandler(
+        log_filename, when='midnight', atTime=date)
     file_handler.setLevel(level)
     file_handler.setFormatter(file_formatter)
     console_handler.setLevel(level)
@@ -86,6 +90,7 @@ class StreamToLogger(object):
     """
     Fake file-like stream object that redirects writes to a logger instance.
     """
+
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
@@ -93,10 +98,11 @@ class StreamToLogger(object):
 
     def write(self, buf):
         for line in buf.rstrip().splitlines():
-                self.logger.log(self.log_level, line.rstrip())
+            self.logger.log(self.log_level, line.rstrip())
 
     def flush(self):
         pass
+
 
 def exception_to_log(log, traceback_message):
     log.error("An exception has ocurred while running the client:")
@@ -104,4 +110,4 @@ def exception_to_log(log, traceback_message):
     for line in exc:
         line = line.rstrip().splitlines()
         for splits in line:
-                log.error(splits)
+            log.error(splits)

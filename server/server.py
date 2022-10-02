@@ -1,3 +1,5 @@
+from logger.logger import define_log, StreamToLogger
+from classes.client_handling import Client
 import socket
 import threading
 import os
@@ -10,13 +12,12 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
-from classes.client_handling import Client
-from logger.logger import define_log, StreamToLogger
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 6969
 ADDR = (IP, PORT)
 FORMAT = 'utf-8'
 CONNECTION_DICT = {}
+
 
 def setup_log():
     console_handler, file_handler = define_log()
@@ -41,13 +42,15 @@ class SocketListener(threading.Thread):
         while True:
             conn, addr = server.accept()
             client = Client(client_id, threading_condition)
-            threaded_client = threading.Thread(target=client.handle_client, args=(conn, addr))
+            threaded_client = threading.Thread(
+                target=client.handle_client, args=(conn, addr))
             threaded_client.daemon = True
             threaded_client.start()
             current_clients.append(client)
             client.setClientList(current_clients)
             log.info(f"[ACTIVE CONNECTIONS] {threading.active_count() - 2}")
             client_id += 1
+
 
 def main():
     log.info("[STARTING] server is starting...")
@@ -64,6 +67,7 @@ def main():
         log.info(f"[MAIN THREAD] Server is stopping...")
         os.kill(pid, 9)
 
-if  __name__ == "__main__":
+
+if __name__ == "__main__":
     setup_log()
     main()
