@@ -1,6 +1,6 @@
 # Simple File Transfer System
 
-Simple file transfer system using TCP protocol between client and server.
+Simple file transfer system using UDP protocol between client and server.
 
 ## Usage
 
@@ -8,20 +8,20 @@ For executing the server in your system, use the following commands:
 
 ```sh
 # Download Docker image
-docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-server@sha256:44f3ef8b15a4709d767ca0112e4406b64160d4a22ac3faf573b89d7b2657ddb6
+docker pull ghcr.io/communications-infrastructure/simple-udp-transfer-system-server@todo_fix
 
 # Start container with server
-docker run --platform linux/amd64 -p 6969:6969 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-server@sha256:44f3ef8b15a4709d767ca0112e4406b64160d4a22ac3faf573b89d7b2657ddb6
+docker run --platform linux/amd64 -p 6969:6969 -i ghcr.io/communications-infrastructure/simple-udp-transfer-system-server@todo_fix
 ```
 
 For executing the client in your system, use the following commands:
 
 ```sh
 # Download Docker image
-docker pull ghcr.io/communications-infrastructure/simple-file-transfer-system-client:main
+docker pull ghcr.io/communications-infrastructure/simple-udp-transfer-system-client:main
 
 # Start container with client
-docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-file-transfer-system-client:main
+docker run --platform linux/amd64 -i ghcr.io/communications-infrastructure/simple-udp-transfer-system-client:main
 ```
 
 > **_NOTE:_** If you have problems connecting the client with the server from Windows, try to clone this repository and run directly the `./client/client.py` file. This may be due to your virtualization settings.
