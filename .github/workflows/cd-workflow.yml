@@ -18,9 +18,9 @@ jobs:
       matrix:
         include:
           - dockerfile: ./server/Dockerfile
-            image: ghcr.io/communications-infrastructure/simple-file-transfer-system-server
+            image: ghcr.io/communications-infrastructure/simple-udp-transfer-system-server
           - dockerfile: ./client/Dockerfile
-            image: ghcr.io/communications-infrastructure/simple-file-transfer-system-client
+            image: ghcr.io/communications-infrastructure/simple-udp-transfer-system-client
     permissions:
       contents: read
       packages: write
