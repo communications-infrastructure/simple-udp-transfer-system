@@ -6,6 +6,7 @@ import sys
 import os
 import traceback
 
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class ColorFormatter(logging.Formatter):
 
@@ -54,17 +55,10 @@ class ColorFormatter(logging.Formatter):
 def define_log():
     # Logging config, logging outside the github repo
     try:
-        if os.name != 'nt':
-            os.makedirs('/home/server/logs')
-        else:
-            os.makedirs('./logs')
+        os.makedirs(PROJECT_PATH + '/logs')
     except FileExistsError:
         pass
-    if os.name != 'nt':
-        log_filename = '/home/server/logs/' + \
-            datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
-    else:
-        log_filename = "./server/logs/" + \
+    log_filename = PROJECT_PATH+"/logs/" + \
             datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
 
     console_handler = logging.StreamHandler(sys.stdout)
