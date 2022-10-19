@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-log = logging.getLogger('TCPServer')
+log = logging.getLogger('UDPServer')
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -18,6 +18,7 @@ ADDR = (IP, PORT)
 FORMAT = 'utf-8'
 CONNECTION_DICT = {}
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def setup_log():
     console_handler, file_handler = define_log()
@@ -32,12 +33,13 @@ def setup_log():
 class SocketListener(threading.Thread):
 
     def run(self):
-        ## Server Variables
+        # Server Variables
         file_to_be_sent = None
         path = PROJECT_PATH + "/files"
         if not "/server" in path:
             path = PROJECT_PATH + "/server/files"
-        files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+        files = [f for f in os.listdir(
+            path) if os.path.isfile(os.path.join(path, f))]
 
         # Server config
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -53,27 +55,31 @@ class SocketListener(threading.Thread):
             elif "CONFIG" in data:
                 commands = data.split(':')
                 if len(commands) == 1 or len(commands) == 0:
-                    server.sendto("Invalid config format (Empty config). Please use the following format: !CONFIG :<file>".encode(FORMAT), addr)
+                    server.sendto(
+                        "Invalid config format (Empty config). Please use the following format: !CONFIG :<file>".encode(FORMAT), addr)
                 elif len(commands) != 3:
                     msg_str = ""
                     for string in commands:
                         msg_str += string + " "
-                    server.sendto(f"Invalid config format! {msg_str}. Please use the following format: !CONFIG :<file> :<num_clients>".encode(FORMAT), addr)
+                    server.sendto(
+                        f"Invalid config format! {msg_str}. Please use the following format: !CONFIG :<file> :<num_clients>".encode(FORMAT), addr)
                 elif commands[1].rstrip() not in files:
-                    server.sendto(f"File {commands[1].rstrip()} does not exist".encode(FORMAT), addr)
+                    server.sendto(
+                        f"File {commands[1].rstrip()} does not exist".encode(FORMAT), addr)
                 else:
                     file_to_be_sent = commands[1].rstrip()
                     server.sendto("Config set".encode(FORMAT), addr)
             elif "TRANSFER" == data:
                 with open(file_to_be_sent, 'rb') as f:
-                    log.info(f"[TRANSFER] Sending file {file_to_be_sent} to client")
+                    log.info(
+                        f"[TRANSFER] Sending file {file_to_be_sent} to client")
                     data = f.read(65536)
                     while data:
                         if server.sendto(data, addr):
                             data = f.read(65536)
                             asyncio.sleep(0.02)
-
                 log.info(f"[TRANSFER] File {file_to_be_sent} sent to client")
+
 
 def main():
     log.info("[STARTING] server is starting...")

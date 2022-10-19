@@ -6,6 +6,8 @@ import sys
 import os
 import traceback
 
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 class ColorFormatter(logging.Formatter):
 
@@ -54,18 +56,11 @@ class ColorFormatter(logging.Formatter):
 def define_log():
     # Logging config, logging outside the github repo
     try:
-        if os.name != 'nt':
-            os.makedirs('/home/client/logs')
-        else:
-            os.makedirs('./client/logs')
+        os.makedirs(PROJECT_PATH + '/logs')
     except FileExistsError:
         pass
-    if os.name != 'nt':
-        log_filename = '/home/client/logs/' + \
-            datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
-    else:
-        log_filename = "./client/logs/" + \
-            datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
+    log_filename = PROJECT_PATH+"/logs/" + \
+        datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-log.txt'
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_formatter = ColorFormatter()
@@ -105,7 +100,7 @@ class StreamToLogger(object):
 
 
 def exception_to_log(log, traceback_message):
-    log.error("An exception has ocurred while running the client:")
+    log.error("An exception has ocurred while running the server:")
     exc = traceback.format_exception(traceback_message)
     for line in exc:
         line = line.rstrip().splitlines()

@@ -7,7 +7,6 @@ import logging
 import select
 from hashfinder.get_hash import hash_file
 from logger.logger import define_log, StreamToLogger
-from server.server import PROJECT_PATH
 
 log = logging.getLogger("client")
 IP = socket.gethostbyname(socket.gethostname())
@@ -17,6 +16,8 @@ FORMAT = 'utf-8'
 COMMANDS = ["!DISCONNECT", "!CONFIG", "!START", "!LIST"]
 MENU = "Server Commands:\n!LIST - List all the available files\n!CONFIG - Set up the server file transfer configuration\n!START - Start the file transfer to all clients\n!DISCONNECT - Disconnect from the server\n"
 num_clients = None
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def setup_log():
     console_handler, file_handler = define_log()
@@ -49,8 +50,8 @@ def connect_client(client_num):
                 else:
                     f.close()
                     receiving = False
-                    log.info(f"[RECEIVED] Client #{client_num} - File received")
-
+                    log.info(
+                        f"[RECEIVED] Client #{client_num} - File received")
 
 
 def main():
