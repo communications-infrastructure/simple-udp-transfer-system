@@ -14,6 +14,7 @@ PORT = 6969
 ADDR = (IP, PORT)
 FORMAT = 'utf-8'
 COMMANDS = ["!DISCONNECT", "!CONFIG", "!START", "!LIST"]
+MENU = "Server Commands:\n!LIST - List all the available files\n!CONFIG - Set up the server file transfer configuration\n!START - Start the file transfer to all clients\n!DISCONNECT - Disconnect from the server\n"
 num_clients = None
 
 
@@ -27,24 +28,23 @@ def setup_log():
 
 
 def connect_client(client_num):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client.sendto(f"!CONNECTION {client_num}".encode(FORMAT), ADDR)
     connected = True
     log.info(f"[CONNECTED] Client #{client_num} - Connected to {IP}:{PORT}")
 
     while connected:
-        client.send(f"!CONNECTION {client_num}".encode(FORMAT))
-        msg = client.recv(1024).decode(FORMAT)
+        msg = client.recvfrom(1024)[0].decode(FORMAT)
         log.info(f"[SERVER] {msg}")
         if msg == "!DISCONNECT":
             connected = False
         elif msg == "OK":
             log.info(
                 f"[CLIENT #{client_num}] Connection established waiting for file transfer")
-            client.send("OK".encode(FORMAT))
-            msg = client.recv(1024).decode(FORMAT)
+            client.sendto("OK".encode(FORMAT), ADDR)
+            msg = client.recvfrom(1024)[0].decode(FORMAT)
             if "TRANSFER" in msg:
-                hash = client.recv(1024).decode(FORMAT)
+                hash = client.recvfrom(1024)[0].decode(FORMAT)
                 file_data = msg.split(":")
                 filename = f"File {client_num} " + file_data[1].rstrip()
                 filesize = int(file_data[2])
@@ -62,7 +62,7 @@ def connect_client(client_num):
                     try:
                         t1 = time.time()
                         while True:
-                            data = client.recv(1024)
+                            data = client.recvfrom(1024)[0]
                             if len(data) <= 0:
                                 bar.close()
                                 t2 = time.time()
@@ -95,43 +95,33 @@ def connect_client(client_num):
 
 
 def main():
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     log.info(f"[STARTING] Client is starting...")
-    try:
-        global ADDR
-        global IP
-        global PORT
-        client.connect(ADDR)
-    except ConnectionRefusedError:
-        IP = input(
-            "Local server is not running, please enter the new IP address of the server: ")
-        ADDR = (IP, PORT)
-        client.connect(ADDR)
-
-    connected = True
-    log.info(f"[CONNECTED] Main Client - Connected to {IP}:{PORT}")
-    client.send("!MAIN_CONN".encode(FORMAT))
-    msg = client.recv(1024).decode(FORMAT)
-    msg = msg.split("\n")
+    config = False
+    msg = MENU.split("\n")
     for i in msg:
         log.info(f"[MENU] {i}")
 
     threads = list()
-
+    connected = True
     global num_clients
     while connected:
         msg = input("[MENU] Enter a command: ")
         if not msg in COMMANDS and not "!CONFIG" in msg:
             log.info(f"[MENU] Invalid command {msg}")
             continue
-        client.send(msg.encode(FORMAT))
-        msg_rcv = client.recv(1024).decode(FORMAT)
-        log.info(f"[SERVER] {msg_rcv}")
-        if msg == "!DISCONNECT":
-            connected = False
-        elif "!CONFIG" in msg and "Config set" in msg_rcv:
-            num_clients = int(msg.split(':')[2])
-        if msg_rcv == "File Transfer Command Started":
+        elif msg == "!LIST":
+            client.sendto("LIST".encode(FORMAT), ADDR)
+            data, addr = client.recvfrom(1024)
+            log.info(f"[SERVER] {data.decode(FORMAT)}")
+        elif "!CONFIG" in msg and not config:
+            client.sendto(msg.encode(FORMAT), addr)
+            config = True
+        elif "!CONFIG" in msg:
+            log.info("[MENU] Server already configured")
+        elif "!DISCONNECT" == msg:
+            sys.exit(0)
+            # TODO: Connect
             for i in range(num_clients):
                 client = threading.Thread(target=connect_client, args=(i+1,))
                 threads.append(client)

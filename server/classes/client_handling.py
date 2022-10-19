@@ -13,14 +13,13 @@ log = logging.getLogger('TCPServer')
 
 
 class Client:
-    def __init__(self, connection_id, threading_condition):
+    def __init__(self, connection_id, ip_address):
         self.connected = False
         self._connnection = None
-        self.address = None
+        self.address = ip_address
         self.connection_id = connection_id
         self.conn_type = None
         self.status = None
-        self.condition = threading_condition
         self.selected_file = None
         self.num_clients = 0
 
@@ -29,14 +28,13 @@ class Client:
         self.connected = True
         self._connection = conn
         self.address = addr
-        config_msg = conn.recv(1024).decode(FORMAT)
+        config_msg = self.recvfrom(1024)
         if config_msg == "!MAIN_CONN":
             self.send(("Main connection received\n"+MENU))
             log.info(f"[MAIN CONNECTION] {addr} connected.")
             self.conn_type = "main"
         elif "!CONNECTION" in config_msg:
             self.conn_type = "client"
-            self.send("OK")
         while self.connected:
             try:
                 if self.conn_type == "main":
@@ -49,15 +47,17 @@ class Client:
                 except ConnectionResetError:
                     pass
                 exception_to_log(log, e)
-        self._connection.close()
 
     def send(self, msg, log_msg=False):
-        self._connection.send(msg.encode(FORMAT))
+        self._connection.sendto(msg.encode(FORMAT), self.address)
         if log_msg:
             log.info(f"[FILE TRANSFER] - {msg}")
 
+    def recvfrom(self, size):
+        return self._connection.recvfrom(size)[0].decode(FORMAT)
+
     def main_client(self):
-        msg = self._connection.recv(1024).decode(FORMAT)
+        msg = self.recvfrom(1024)
         try:
             files = [f for f in os.listdir(
                 "./server/files") if os.path.isfile(os.path.join("./server/files", f))]
@@ -127,7 +127,7 @@ class Client:
             self.send("Invalid command\n"+MENU)
 
     def normal_client(self):
-        msg = self._connection.recv(1024).decode(FORMAT)
+        msg = self.recvfrom(1024)
         try:
             self.server_path = "./server/files/"
             [f for f in os.listdir(self.server_path) if os.path.isfile(
