@@ -40,7 +40,7 @@ def connect_client(client_num):
     data, addr = client.recvfrom(1024)
     if data:
         file_name = data.strip()
-        with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4") as f:
+        with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "w+") as f:
             receiving = True
             while receiving:
                 receiving = select.select([client], [], [], timeout)[0]
@@ -80,7 +80,7 @@ def main():
             data, addr = client.recvfrom(1024)
             if data.decode(FORMAT) == "Config set":
                 config = True
-                num_clients = msg.split(":")[2]
+                num_clients = int(msg.split(":")[2])
             log.info(f"[SERVER] {data.decode(FORMAT)}")
         elif "!CONFIG" in msg:
             log.info("[MENU] Server already configured")
