@@ -40,7 +40,7 @@ def connect_client(client_num):
     data, addr = client.recvfrom(65507)
     if data:
         file_name = data.strip()
-        with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "w+") as f:
+        with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "wb") as f:
             log.info(f"[RECEIVING] Receiving file {file_name}...")
             receiving = True
             while receiving:
