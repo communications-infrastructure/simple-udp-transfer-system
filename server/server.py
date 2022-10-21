@@ -34,6 +34,9 @@ def setup_log():
 class SocketListener(threading.Thread):
 
     def run(self):
+        asyncio.run(self.start_server())
+
+    async def start_server(self):
         # Server Variables
         file_to_be_sent = None
         path = PROJECT_PATH + "/files"
@@ -71,11 +74,11 @@ class SocketListener(threading.Thread):
                     log.info(f"[TRANSFER] Sending file {file_to_be_sent} to client")
                     log.info(f"[TRANSFER] File size: {os.path.getsize(path + '/' + file_to_be_sent)} bytes")
                     t1 = time.time()
-                    data = f.read(65507)
+                    data = f.read(1024)
                     while data:
                         if server.sendto(data, addr):
                             data = f.read(65507)
-                            asyncio.sleep(0.02)
+                            await asyncio.sleep(0.02)
                     t2 = time.time()
                 log.info(f"[TRANSFER] File {file_to_be_sent} sent to client")
                 log.info(f"[TRANSFER] Time taken to send file: {t2 - t1} seconds")
