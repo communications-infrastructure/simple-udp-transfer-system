@@ -39,10 +39,10 @@ def connect_client(client_num):
     t1 = time.time()
     data, addr = client.recvfrom(1024)
     if data:
-        file_name = data.decode(FORMAT).strip()
         with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "wb") as f:
-            log.info(f"[RECEIVING] Receiving file {file_name}...")
+            log.info(f"[RECEIVING] Receiving file from server...")
             receiving = True
+            f.write(data)
             while receiving:
                 receiving = select.select([client], [], [], timeout)[0]
                 if receiving:
