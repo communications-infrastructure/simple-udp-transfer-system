@@ -1,5 +1,4 @@
 from logger.logger import define_log, StreamToLogger
-import asyncio
 import socket
 import threading
 import os
@@ -34,9 +33,9 @@ def setup_log():
 class SocketListener(threading.Thread):
 
     def run(self):
-        asyncio.run(self.start_server())
+        self.start_server()
 
-    async def start_server(self):
+    def start_server(self):
         # Server Variables
         file_to_be_sent = None
         path = PROJECT_PATH + "/files"
@@ -78,7 +77,6 @@ class SocketListener(threading.Thread):
                     while data:
                         if server.sendto(data, addr):
                             data = f.read(65507)
-                            await asyncio.sleep(0.02)
                     t2 = time.time()
                 log.info(f"[TRANSFER] File {file_to_be_sent} sent to client")
                 log.info(f"[TRANSFER] Time taken to send file: {t2 - t1} seconds")
