@@ -64,6 +64,9 @@ def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     config = False
     global num_clients
+    global ADDR
+    IP = input("Enter the server IP: ")
+    ADDR = (IP, PORT)
     msg = MENU.split("\n")
     log.info(f"[STARTING] Client is starting...")
     for i in msg:
