@@ -1,11 +1,10 @@
 import socket
 import threading
-from tqdm import tqdm
 import os
 import sys
 import logging
 import select
-from hashfinder.get_hash import hash_file
+import time
 from logger.logger import define_log, StreamToLogger
 
 log = logging.getLogger("client")
@@ -37,10 +36,12 @@ def connect_client(client_num):
     except FileExistsError:
         pass
     client.sendto(f"TRANSFER".encode(FORMAT), ADDR)
+    t1 = time.time()
     data, addr = client.recvfrom(1024)
     if data:
         file_name = data.strip()
         with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "w+") as f:
+            log.info(f"[RECEIVING] Receiving file {file_name}...")
             receiving = True
             while receiving:
                 receiving = select.select([client], [], [], timeout)[0]
@@ -50,8 +51,13 @@ def connect_client(client_num):
                 else:
                     f.close()
                     receiving = False
-                    log.info(
-                        f"[RECEIVED] Client #{client_num} - File received")
+            t2 = time.time()
+            file_path = PROJECT_PATH + f'/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4'
+            time_taken = t2 - t1
+            log.info(f"[RECEIVED] Client #{client_num} - File received")
+            log.info(f"[TIME] Client #{client_num} - Time elapsed: {t2-t1} seconds")
+            log.info(f"[RECEIVED] Client #{client_num} - File: {os.path.getsize(file_path)} bytes")
+            log.info(f"[TRANFER SPEED] Client #{client_num} - Transfer speed: {(os.path.getsize(file_path)/1024**2)/(time_taken)} bytes/second")
 
 
 def main():

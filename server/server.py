@@ -5,6 +5,7 @@ import threading
 import os
 import sys
 import logging
+import time
 
 log = logging.getLogger('UDPServer')
 
@@ -68,12 +69,16 @@ class SocketListener(threading.Thread):
             elif "TRANSFER" == data:
                 with open(path + '/' + file_to_be_sent, 'rb') as f:
                     log.info(f"[TRANSFER] Sending file {file_to_be_sent} to client")
+                    log.info(f"[TRANSFER] File size: {os.path.getsize(path + '/' + file_to_be_sent)} bytes")
+                    t1 = time.time()
                     data = f.read(65536)
                     while data:
                         if server.sendto(data, addr):
                             data = f.read(65536)
                             asyncio.sleep(0.02)
+                    t2 = time.time()
                 log.info(f"[TRANSFER] File {file_to_be_sent} sent to client")
+                log.info(f"[TRANSFER] Time taken to send file: {t2 - t1} seconds")
 
 
 def main():
