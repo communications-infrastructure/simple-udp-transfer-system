@@ -71,10 +71,10 @@ class SocketListener(threading.Thread):
                     log.info(f"[TRANSFER] Sending file {file_to_be_sent} to client")
                     log.info(f"[TRANSFER] File size: {os.path.getsize(path + '/' + file_to_be_sent)} bytes")
                     t1 = time.time()
-                    data = f.read(65536)
+                    data = f.read(65507)
                     while data:
                         if server.sendto(data, addr):
-                            data = f.read(65536)
+                            data = f.read(65507)
                             asyncio.sleep(0.02)
                     t2 = time.time()
                 log.info(f"[TRANSFER] File {file_to_be_sent} sent to client")

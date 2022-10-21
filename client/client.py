@@ -37,7 +37,7 @@ def connect_client(client_num):
         pass
     client.sendto(f"TRANSFER".encode(FORMAT), ADDR)
     t1 = time.time()
-    data, addr = client.recvfrom(1024)
+    data, addr = client.recvfrom(65507)
     if data:
         file_name = data.strip()
         with open(PROJECT_PATH + f"/client/ArchivosRecibidos/Cliente{client_num}-Prueba{num_clients}.mp4", "w+") as f:
@@ -46,7 +46,7 @@ def connect_client(client_num):
             while receiving:
                 receiving = select.select([client], [], [], timeout)[0]
                 if receiving:
-                    data, addr = client.recvfrom(65536)
+                    data, addr = client.recvfrom(65507)
                     f.write(data)
                 else:
                     f.close()
