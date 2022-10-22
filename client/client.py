@@ -57,7 +57,7 @@ def connect_client(client_num):
             log.info(f"[RECEIVED] Client #{client_num} - File received")
             log.info(f"[TIME] Client #{client_num} - Time elapsed: {t2-t1} seconds")
             log.info(f"[RECEIVED] Client #{client_num} - File: {os.path.getsize(file_path)} bytes")
-            log.info(f"[TRANFER SPEED] Client #{client_num} - Transfer speed: {(os.path.getsize(file_path)/1024**2)/(time_taken)} MB/s")
+            log.info(f"[TRANSFER SPEED] Client #{client_num} - Transfer speed: {(os.path.getsize(file_path)/1024**2)/(time_taken)} MB/s")
 
 
 def main():

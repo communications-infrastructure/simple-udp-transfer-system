@@ -38,48 +38,52 @@ class SocketListener(threading.Thread):
     def start_server(self):
         # Server Variables
         file_to_be_sent = None
-        path = PROJECT_PATH + "/files"
-        if not "/server" in path:
-            path = PROJECT_PATH + "/server/files"
-        files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+        self.path = PROJECT_PATH + "/files"
+        if not "/server" in self.path:
+            self.path = PROJECT_PATH + "/server/files"
+        files = [f for f in os.listdir(self.path) if os.path.isfile(os.path.join(self.path, f))]
 
         # Server config
-        server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server.bind(ADDR)
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server.bind(ADDR)
         log.info(f"[PROCESS] Server process ID: {os.getpid()}")
         log.info(f'[LISTENING] Server is listening on {IP}:{PORT}')
         while True:
-            data, addr = server.recvfrom(1024)
+            data, addr = self.server.recvfrom(1024)
             data = data.decode(FORMAT)
             log.info(f"[RECEIVED] Received data from client: {data}")
             if "LIST" == data:
-                server.sendto(str(files).encode(FORMAT), addr)
+                self.server.sendto(str(files).encode(FORMAT), addr)
             elif "CONFIG" in data:
                 commands = data.split(':')
                 if len(commands) == 1 or len(commands) == 0:
-                    server.sendto("Invalid config format (Empty config). Please use the following format: !CONFIG :<file>".encode(FORMAT), addr)
+                    self.server.sendto("Invalid config format (Empty config). Please use the following format: !CONFIG :<file>".encode(FORMAT), addr)
                 elif len(commands) != 3:
                     msg_str = ""
                     for string in commands:
                         msg_str += string + " "
-                    server.sendto(f"Invalid config format! {msg_str}. Please use the following format: !CONFIG :<file> :<num_clients>".encode(FORMAT), addr)
+                    self.server.sendto(f"Invalid config format! {msg_str}. Please use the following format: !CONFIG :<file> :<num_clients>".encode(FORMAT), addr)
                 elif commands[1].rstrip() not in files:
-                    server.sendto(f"File {commands[1].rstrip()} does not exist".encode(FORMAT), addr)
+                    self.server.sendto(f"File {commands[1].rstrip()} does not exist".encode(FORMAT), addr)
                 else:
                     file_to_be_sent = commands[1].rstrip()
-                    server.sendto("Config set".encode(FORMAT), addr)
+                    self.server.sendto("Config set".encode(FORMAT), addr)
             elif "TRANSFER" == data:
-                with open(path + '/' + file_to_be_sent, 'rb') as f:
-                    log.info(f"[TRANSFER] Sending file {file_to_be_sent} to client")
-                    log.info(f"[TRANSFER] File size: {os.path.getsize(path + '/' + file_to_be_sent)} bytes")
-                    t1 = time.time()
+                thread = threading.Thread(target=self.send_file, args=(file_to_be_sent, addr))
+                thread.start()
+
+    def send_file(self, file_to_be_sent, addr):
+        with open(self.path + '/' + file_to_be_sent, 'rb') as f:
+            log.info(f"[TRANSFER] Sending file {file_to_be_sent} to client {addr}")
+            log.info(f"[TRANSFER] File size: {os.path.getsize(self.path + '/' + file_to_be_sent)} bytes. Client {addr}")
+            t1 = time.time()
+            data = f.read(65507)
+            while data:
+                if self.server.sendto(data, addr):
                     data = f.read(65507)
-                    while data:
-                        if server.sendto(data, addr):
-                            data = f.read(65507)
-                    t2 = time.time()
-                log.info(f"[TRANSFER] File {file_to_be_sent} sent to client")
-                log.info(f"[TRANSFER] Time taken to send file: {t2 - t1} seconds")
+            t2 = time.time()
+        log.info(f"[TRANSFER] File {file_to_be_sent} sent to client {addr}")
+        log.info(f"[TRANSFER] Time taken to send file: {t2 - t1} seconds. Client {addr}")
 
 
 def main():
