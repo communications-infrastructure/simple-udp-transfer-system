@@ -8,11 +8,13 @@ For executing the server in your system, use the following commands:
 
 ```sh
 # Download Docker image
-docker pull ghcr.io/communications-infrastructure/simple-udp-transfer-system-server@todo_fix
+docker pull ghcr.io/communications-infrastructure/simple-udp-transfer-system-server:latest
 
 # Start container with server
-docker run --platform linux/amd64 -p 6969:6969 -i ghcr.io/communications-infrastructure/simple-udp-transfer-system-server@todo_fix
+docker run --platform linux/amd64 -p 6969:6969 -i ghcr.io/communications-infrastructure/simple-udp-transfer-system-server:latest
 ```
+
+> **_NOTE:_** If you have firewall or port exposing problems, try to clone this repository and run directly the `./server/server.py` file. This may be due to your operating system settings.
 
 For executing the client in your system, use the following commands:
 
